@@ -502,10 +502,60 @@
     .fade-in {
       opacity: 1;
     }
+
+    /* 音乐播放器 */
+    .music-btn {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(155, 35, 53, 0.12);
+      border: 1px solid rgba(155, 35, 53, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 999;
+      transition: background 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .music-btn:active {
+      background: rgba(155, 35, 53, 0.25);
+    }
+    .music-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: var(--color-accent);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .music-btn.playing svg {
+      animation: music-spin 3s linear infinite;
+    }
+    @keyframes music-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <div class="nav-dots" id="navDots"></div>
+
+  <!-- 背景音乐 -->
+  <audio id="bgm" loop preload="auto">
+    <source src="bgm.mp3" type="audio/mpeg">
+  </audio>
+  <div class="music-btn" id="musicBtn" onclick="toggleMusic()">
+    <svg viewBox="0 0 24 24">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+  </div>
 
   <!-- ==================== 第1屏：封面 ==================== -->
   <section class="screen" id="screen1">
@@ -769,6 +819,36 @@
 
       sections.forEach(s => observer.observe(s));
     })();
+
+    // 背景音乐控制
+    var bgm = document.getElementById('bgm');
+    var musicBtn = document.getElementById('musicBtn');
+    var musicStarted = false;
+
+    function toggleMusic() {
+      if (bgm.paused) {
+        bgm.play().then(function() {
+          musicBtn.classList.add('playing');
+        }).catch(function() {});
+      } else {
+        bgm.pause();
+        musicBtn.classList.remove('playing');
+      }
+    }
+
+    // 首次点击页面时自动播放（移动端浏览器限制）
+    function tryAutoPlay() {
+      if (!musicStarted) {
+        musicStarted = true;
+        bgm.play().then(function() {
+          musicBtn.classList.add('playing');
+        }).catch(function() {});
+        document.removeEventListener('click', tryAutoPlay);
+        document.removeEventListener('touchstart', tryAutoPlay);
+      }
+    }
+    document.addEventListener('click', tryAutoPlay);
+    document.addEventListener('touchstart', tryAutoPlay);
   </script>
 </body>
 </html>
